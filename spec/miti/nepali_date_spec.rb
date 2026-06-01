@@ -59,6 +59,25 @@ RSpec.describe Miti::NepaliDate do
     end
   end
 
+  describe "#strftime" do
+    it "formats common directives in english by default" do
+      expect(nepali_date.strftime("%Y-%m-%d")).to eq("2079-06-26")
+      expect(nepali_date.strftime("%B %d, %Y")).to eq("Asoj 26, 2079")
+      expect(nepali_date.strftime("%A")).to eq("Wednesday")
+      expect(nepali_date.strftime("%j")).to eq(nepali_date.yday.to_s.rjust(3, "0"))
+      expect(nepali_date.strftime("%F")).to eq("2079-06-26")
+      expect(nepali_date.strftime("%D")).to eq("06/26/79")
+    end
+
+    it "formats nepali month and weekday when nepali flag is set" do
+      expect(nepali_date.strftime("%B %d, %Y %A", nepali: true)).to include("बुधबार")
+    end
+
+    it "supports literal percent" do
+      expect(nepali_date.strftime("%%Y")).to eq("%Y")
+    end
+  end
+
   describe ".today" do
     it "returns a NepaliDate for today" do
       expect(described_class.today).to be_a(described_class)

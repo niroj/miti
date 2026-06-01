@@ -86,6 +86,45 @@ module Miti
       days_before_month + gatey
     end
 
+    ##
+    # Strftime-like formatter for Nepali (BS) date.
+    # Supports common date directives and falls back to literal for unknown ones.
+    #
+    # @param format [String]
+    # @param nepali [Boolean] use Nepali month/week names when true
+    #
+    # @return [String]
+    def strftime(format, nepali: false)
+      month_names = nepali ? MONTHS_IN_NEPALI : MONTHS_IN_ENGLISH
+      week_days = nepali ? WEEK_DAYS_IN_NEPALI : WEEK_DAYS_IN_ENGLISH
+
+      replacements = {
+        "%Y" => barsa.to_s.rjust(4, "0"),
+        "%y" => (barsa % 100).to_s.rjust(2, "0"),
+        "%m" => mahina.to_s.rjust(2, "0"),
+        "%-m" => mahina.to_s,
+        "%B" => month_names[mahina - 1],
+        "%b" => month_names[mahina - 1][0, 3],
+        "%d" => gatey.to_s.rjust(2, "0"),
+        "%-d" => gatey.to_s,
+        "%e" => gatey.to_s.rjust(2, " "),
+        "%A" => week_days[bar],
+        "%a" => week_days[bar][0, 3],
+        "%w" => bar.to_s,
+        "%u" => (bar == 0 ? 7 : bar).to_s,
+        "%j" => yday.to_s.rjust(3, "0"),
+        "%F" => "#{barsa.to_s.rjust(4, "0")}-#{mahina.to_s.rjust(2, "0")}-#{gatey.to_s.rjust(2, "0")}",
+        "%D" => "#{mahina.to_s.rjust(2, "0")}/#{gatey.to_s.rjust(2, "0")}/#{(barsa % 100).to_s.rjust(2, "0")}",
+        "%n" => "\n",
+        "%t" => "\t",
+        "%%" => "%"
+      }
+
+      format.gsub(/%(-[a-zA-Z]|[a-zA-Z%])/){ |directive|
+        replacements.fetch(directive, directive)
+      }
+    end
+
     class << self
       def today
         AdToBs.new(Date.today).convert
