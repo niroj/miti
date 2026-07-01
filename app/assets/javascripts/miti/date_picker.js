@@ -3,8 +3,9 @@ import MitiConverter from "miti/converter"
 const OPEN_CLASS = "miti-date-picker--open"
 
 export default class MitiDatePicker {
-  constructor(element) {
+  constructor(element, options = {}) {
     this.element = element
+    this.maxValue = options.maxValue || element.getAttribute("data-miti-date-picker-max-value")
     this.input = element.querySelector(".miti-date-field")
     this.icon = element.querySelector(".miti-date-field__icon")
     this.theme = element.dataset.mitiTheme
@@ -197,7 +198,29 @@ export default class MitiDatePicker {
     let html = `<div class="miti-date-picker__nav">`
     html += `<button type="button" class="miti-date-picker__nav-btn" data-miti-nav="prev">&larr;</button>`
     html += `<span class="miti-date-picker__title" data-miti-title>${monthName}${showYear ? ` ${this.currentYear}` : ""}</span>`
-    html += `<button type="button" class="miti-date-picker__nav-btn" data-miti-nav="next">&rarr;</button>`
+    
+    let maxBarsa, maxMahina, maxGatey
+    if (this.maxValue) {
+      const parts = this.maxValue.split(/[-\/]/).map(Number)
+      if (parts.length === 3) {
+        maxBarsa = parts[0]
+        maxMahina = parts[1]
+        maxGatey = parts[2]
+      }
+    }
+
+    let hideNext = false
+    if (maxBarsa) {
+      if (this.currentYear > maxBarsa || (this.currentYear === maxBarsa && this.currentMonth >= maxMahina)) {
+        hideNext = true
+      }
+    }
+
+    if (hideNext) {
+      html += `<button type="button" class="miti-date-picker__nav-btn" style="visibility: hidden; pointer-events: none;" data-miti-nav="next">&rarr;</button>`
+    } else {
+      html += `<button type="button" class="miti-date-picker__nav-btn" data-miti-nav="next">&rarr;</button>`
+    }
     html += `</div>`
 
     html += `<table class="miti-date-picker__calendar"><thead><tr>`
@@ -218,13 +241,24 @@ export default class MitiDatePicker {
           const isToday = today && today.barsa === this.currentYear && today.mahina === this.currentMonth && today.gatey === gatey
           const isSelected = gatey !== null && this._matchesValue(this.currentYear, this.currentMonth, gatey, inputVal)
 
+          let isAfterMax = false
+          if (maxBarsa) {
+            if (this.currentYear > maxBarsa) isAfterMax = true
+            else if (this.currentYear === maxBarsa && this.currentMonth > maxMahina) isAfterMax = true
+            else if (this.currentYear === maxBarsa && this.currentMonth === maxMahina && gatey > maxGatey) isAfterMax = true
+          }
+
           let cls = "miti-date-picker__day"
           if (isToday) cls += " miti-date-picker__day--today"
-          if (isSelected) cls += " miti-date-picker__day--selected"
           if (c === 0) cls += " miti-date-picker__day--sun"
           if (c === 6) cls += " miti-date-picker__day--sat"
 
-          html += `<td class="${cls}" data-miti-day data-gatey="${gatey}" data-barsa="${this.currentYear}" data-mahina="${this.currentMonth}" role="button" tabindex="-1">${gatey}</td>`
+          if (isAfterMax) {
+            html += `<td class="${cls}" style="opacity: 0.3; cursor: not-allowed;" tabindex="-1">${gatey}</td>`
+          } else {
+            if (isSelected) cls += " miti-date-picker__day--selected"
+            html += `<td class="${cls}" data-miti-day data-gatey="${gatey}" data-barsa="${this.currentYear}" data-mahina="${this.currentMonth}" role="button" tabindex="-1">${gatey}</td>`
+          }
           cellIdx++
         } else {
           html += `<td class="miti-date-picker__day miti-date-picker__day--other"></td>`
