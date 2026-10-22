@@ -66,11 +66,28 @@ Miti.to_ad("2082-01-15")
 
     $ rails generate miti:install
 
-To copy styles into your app for customization:
+The generator:
+- adds `import "miti"` to `app/javascript/application.js`. Importmap apps get the pins from the gem automatically
+- adds `stylesheet_link_tag "miti/calendar"` to your application layout
+- copies the JS files into `app/javascript/miti/` when it detects a bundler (esbuild, webpack, rollup or vite)
 
-    $ rails generate miti:install --copy-styles
+Options:
+
+    $ rails generate miti:install --copy-styles      # copy calendar.css into your app for customization
+    $ rails generate miti:install --copy-javascript  # force-copy the JS files into app/javascript/miti/
 
 To undo: `rails destroy miti:install`
+
+To set things up by hand, use `miti_assets` in your layout's `<head>`. It includes the calendar data and the stylesheet:
+
+```erb
+<%= miti_assets %>
+```
+
+#### Upgrading from 1.2.x
+
+- `nepali_date_field` now submits the BS string (e.g. `event[happened_on] = "2082-01-15"`) instead of a hidden AD input. `has_nepali_date` converts it to AD on assignment. Without the model concern, convert it in the controller (see [Controller concern](#controller-concern))
+- The calendar data endpoint is now `POST`. Re-run `rails generate miti:install --copy-javascript` if you copied the JS files earlier
 
 ### Date picker (popover calendar)
 
@@ -177,6 +194,22 @@ With `store_bs: true`:
 - `event.happened_on_bs` reads from the DB column directly (zero conversion cost)
 - Falls back to converting from AD if the column is empty
 - The setter writes the BS string to the column immediately
+- If only the BS column is set, it is synced to the AD column in `before_validation`
+
+### Controller concern
+
+Converts BS date params to AD `Date` objects before an action runs. Use it for params that don't go through `has_nepali_date`, such as filters:
+
+```ruby
+class EventsController < ApplicationController
+  include Miti::Rails::ControllerConcern
+  auto_convert_bs_dates :from, :to, only: :index   # params[:from], params[:to] become AD Dates; invalid values are left as-is
+
+  def index
+    date = parse_date_param(params[:date])  # BS string -> AD Date, Date.current if blank or invalid
+  end
+end
+```
 
 ### Calendar grid
 
