@@ -1,6 +1,6 @@
 ## [Unreleased]
 
-## [1.3.0] - Unreleased
+## [1.3.0] - 2026-10-23
 
 ### Rails integration
 - Add `nepali_date_range_field` form helper: one input with a single popover for drag-to-select or click-to-select, range highlighting, and two hidden inputs. Fires a `miti:range-selected` event
