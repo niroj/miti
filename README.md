@@ -17,11 +17,11 @@ Or add to your Gemfile:
 All date arguments must be in `YYYY-MM-DD` or `YYYY/MM/DD` format.
 
     $ miti today
-    # [2082-01-15 BS] Baisakh 15, 2082 Wednesday
+    # [2082-01-15 BS] Baisakh 15, 2082 Monday
     # [2025-04-28 AD] April 28, 2025 Monday
 
     $ miti to_bs 2025-04-28
-    # [2082-01-15 BS] Baisakh 15, 2082 Wednesday
+    # [2082-01-15 BS] Baisakh 15, 2082 Monday
 
     $ miti to_ad 2082-01-15
     # [2025-04-28 AD] April 28, 2025 Monday
@@ -39,10 +39,10 @@ Miti.to_bs("2025-04-28")
 #=> #<Miti::NepaliDate:0x... @barsa=2082, @mahina=1, @gatey=15>
 
 Miti.to_bs("2025-04-28").descriptive
-#=> "Baisakh 15, 2082 Wednesday"
+#=> "Baisakh 15, 2082 Monday"
 
 Miti.to_bs("2025-04-28").descriptive(nepali: true)
-#=> "बैशाख 15, 2082 Wednesday(बुधबार)"
+#=> "बैशाख 15, 2082 Monday(सोमबार)"
 
 Miti.to_bs("2025-04-28").to_s
 #=> "2082-01-15"
@@ -51,14 +51,26 @@ Miti.to_bs("2025-04-28").format("%g %b %m")
 #=> "15 2082 01"
 
 Miti.to_bs("2025-04-28").format("%B %g, %Y %A")
-#=> "Baisakh 15, 2082 Wednesday"
+#=> "Baishakh 15, 2082 Monday"
 
 Miti.to_bs("2025-04-28").format("%B %g, %Y %A", nepali: true)
-#=> "बैशाख 15, 2082 बुधबार"
+#=> "वैशाख 15, 2082 सोमबार"
 
 Miti.to_ad("2082-01-15")
 #=> #<Date: 2025-04-28 ...>
 ```
+
+`format` tokens. The named form (e.g. `%<gatey>g`) works too.
+
+| Token | Output |
+|-------|--------|
+| `%g` | Day, zero-padded (`05`) |
+| `%m` | Month, zero-padded (`01`) |
+| `%b` / `%Y` | Year (`2082`) |
+| `%B` | Month name |
+| `%A` | Weekday name |
+
+With `nepali: true`, `%B` and `%A` come out in Nepali.
 
 ## Rails Integration
 
