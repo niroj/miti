@@ -6,13 +6,13 @@ module Miti
       extend ActiveSupport::Concern
 
       class_methods do
-        def auto_convert_bs_dates(*date_params)
-          before_action(only: date_params) do
+        def auto_convert_bs_dates(*date_params, **callback_options)
+          before_action(**callback_options) do
             date_params.each do |param|
               next unless params[param].present?
 
               params[param] = begin
-                parse_date_param(params[param])
+                Miti.to_ad(params[param])
               rescue StandardError
                 params[param]
               end
